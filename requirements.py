@@ -1,0 +1,3 @@
+#Recommended Python version
+python>=3.10
+
