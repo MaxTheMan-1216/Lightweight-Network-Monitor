@@ -16,8 +16,9 @@ def handle_client(client_socket, address):
     client_socket.close()
 
 def start_server():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
-        server.bind((HOST, PORT))
+    with socket.socket(socket.AF_INET6, socket.SOCK_STREAM) as server:
+        server.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+        server.bind(("::", PORT))
         server.listen()
         log_event("INFO", f"Server started on {HOST}:{PORT}")
 
@@ -27,4 +28,3 @@ def start_server():
             thread = threading.Thread(target=handle_client, args=(client_socket, address))
             thread.daemon = True
             thread.start()
-            

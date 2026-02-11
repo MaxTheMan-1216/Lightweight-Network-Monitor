@@ -8,10 +8,12 @@ connection_history = defaultdict(list)
 #Stores unique ports contacted per IP address
 port_history = defaultdict(set)
 
+alert_cooldown = {}
 #Detection thresholds
 BRUTE_FORCE_THRESHOLD = 5  # Number of connections in a short time frame
 TIME_WINDOW = 10  # Time frame in seconds for counting connections
 PORT_SCAN_THRESHOLD = 5    # Number of unique ports contacted in a short time frame
+ALERT_COOLDOWN = 30  # Cooldown period in seconds for repeated alerts from the same IP
 
 #Analyzes incoming connections for potential brute-force attacks and port scans
 def analyze_connection(ip, port):
@@ -23,7 +25,11 @@ def analyze_connection(ip, port):
     connection_history[ip] = [t for t in connection_history[ip] if current_time - t <= TIME_WINDOW]
 
     if len(connection_history[ip]) > BRUTE_FORCE_THRESHOLD:
-        log_event("ALERT", f"Possible brute-force attack detected from {ip}")
+        last_alert = alert_cooldown.get(ip)
+
+        if not last_alert or current_time - last_alert > ALERT_COOLDOWN:
+            log_event("ALERT", f"Repeated brute-force attack detected from {ip}")
+            alert_cooldown[ip] = current_time
 
     port_history[ip].add(port)
 
